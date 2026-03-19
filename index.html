@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>声の庭 — Voice Garden</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #faf9f6;
+    overflow: hidden;
+    font-family: 'Georgia', serif;
+  }
+
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #ui {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    z-index: 10;
+  }
+
+  #startBtn {
+    background: transparent;
+    border: 1.5px solid rgba(160, 100, 80, 0.5);
+    color: rgba(120, 70, 60, 0.85);
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    padding: 10px 28px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    backdrop-filter: blur(4px);
+  }
+
+  #startBtn:hover {
+    background: rgba(160, 100, 80, 0.08);
+    border-color: rgba(160, 100, 80, 0.8);
+  }
+
+  #startBtn.active {
+    border-color: rgba(180, 120, 100, 0.6);
+    color: rgba(140, 80, 60, 0.9);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  #hint {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(140, 100, 80, 0.5);
+    text-align: center;
+  }
+
+  #volumeBar {
+    width: 120px;
+    height: 2px;
+    background: rgba(160, 100, 80, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+  }
+
+  #volumeFill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(200, 130, 100, 0.6), rgba(240, 160, 120, 0.9));
+    border-radius: 2px;
+    transition: width 0.05s ease;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="ui">
+  <button id="startBtn">マイクを起動する</button>
+  <div id="volumeBar"><div id="volumeFill"></div></div>
+  <div id="hint">声を出すとお花が咲きます　クリックでリセット</div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+const volumeBar = document.getElementById('volumeBar');
+const volumeFill = document.getElementById('volumeFill');
+
+let width, height;
+let analyser, dataArray;
+let volume = 0;
+let smoothVolume = 0;
+let baseHue = Math.random() * 360;
+let isRunning = false;
+let animId;
+
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+  // 背景を白で塗り直す
+  ctx.fillStyle = 'hsla(30, 20%, 97%, 1)';
+  ctx.fillRect(0, 0, width, height);
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+// マイク起動
+startBtn.addEventListener('click', async () => {
+  if (isRunning) return;
+  
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.8;
+    source.connect(analyser);
+    
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    
+    isRunning = true;
+    startBtn.textContent = '🎤 聴いています';
+    startBtn.classList.add('active');
+    volumeBar.style.display = 'block';
+    
+    loop();
+  } catch (e) {
+    startBtn.textContent = 'マイクを許可してください';
+    console.error(e);
+  }
+});
+
+function getVolume() {
+  analyser.getByteFrequencyData(dataArray);
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += dataArray[i];
+  }
+  return sum / dataArray.length / 255;
+}
+
+function loop() {
+  animId = requestAnimationFrame(loop);
+  
+  volume = getVolume();
+  smoothVolume += (volume - smoothVolume) * 0.2;
+  
+  // ボリューム表示
+  volumeFill.style.width = Math.min(smoothVolume * 400, 100) + '%';
+  
+  // ゆっくり背景を薄く重ねて古い花を消す
+  ctx.fillStyle = 'hsla(30, 20%, 97%, 0.008)';
+  ctx.fillRect(0, 0, width, height);
+  
+  if (smoothVolume > 0.005) {
+    let hueShift = smoothVolume * 300;
+    baseHue = (baseHue + hueShift) % 360;
+    
+    let x = Math.random() * width;
+    let y = Math.random() * height;
+    let size = map(smoothVolume, 0, 0.5, 20, 200) * (0.5 + Math.random() * 2.0);
+    
+    drawRose(x, y, size, baseHue, smoothVolume);
+  }
+}
+
+function drawRose(x, y, s, h, v) {
+  ctx.save();
+  ctx.translate(x, y);
+  
+  let numPetals = Math.floor(map(v, 0, 0.5, 20, 100));
+  
+  for (let i = 0; i < numPetals; i++) {
+    let angle = i * 137.5 * Math.PI / 180;
+    let r = Math.sqrt(i) * (s * 0.04);
+    
+    ctx.rotate(angle);
+    
+    let petalHue = (h + i * 1.5) % 360;
+    let sat = map(i, 0, numPetals, 90, 30);
+    let bri = map(i, 0, numPetals, 65, 90); // HSL lightness
+    let alpha = map(i, 0, numPetals, 0.25, 0.06);
+    
+    ctx.strokeStyle = `hsla(${petalHue}, ${sat}%, ${bri}%, ${alpha})`;
+    ctx.fillStyle   = `hsla(${petalHue}, ${sat}%, ${bri}%, ${alpha * 0.6})`;
+    ctx.lineWidth = 0.5;
+    
+    let kw = map(i, 0, numPetals, 5, s) * (0.6 + Math.random() * 1.4);
+    let kh = kw * (0.5 + Math.random() * 0.7);
+    let rx = r + (Math.random() - 0.5) * 6;
+    
+    ctx.beginPath();
+    ctx.ellipse(rx, 0, kw / 2, kh / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  
+  ctx.restore();
+}
+
+// クリックでリセット
+canvas.addEventListener('click', () => {
+  ctx.fillStyle = 'hsla(30, 20%, 97%, 1)';
+  ctx.fillRect(0, 0, width, height);
+  baseHue = Math.random() * 360;
+});
+
+function map(v, a, b, c, d) {
+  return c + (d - c) * ((v - a) / (b - a));
+}
+</script>
+</body>
+</html>
