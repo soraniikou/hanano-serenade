@@ -6,6 +6,7 @@
 https://hanano-serenade.vercel.app
 →URLをchromeなどに貼り付けてください
 →マイク🎤を許可してください
+
 →🌼12/12 まで言葉を伝え続けると
 →毎回　異なる短いメッセージがでます
 
