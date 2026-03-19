@@ -217,7 +217,7 @@ function loop() {
   ctx.fillRect(0, 0, width, height);
 
   // 閾値を0.15に上げて環境音を無視
-  if (smoothVolume > 0.18 && !bouquetShown) {
+  if (smoothVolume > 0.15 && !bouquetShown) {
     baseHue = (baseHue + smoothVolume * 180) % 360;
     const now = Date.now();
     if (now - lastFlowerTime > 1050) {
@@ -226,7 +226,7 @@ function loop() {
       const flowerHue = (baseHue + hueOffset) % 360;
       const x = Math.random() * width;
       const y = Math.random() * height * 0.82;
-      const size = map(smoothVolume, 0.08, 0.5, 35, 150) * (0.7 + Math.random() * 1.2);
+      const size = map(smoothVolume, 0.15, 0.5, 35, 150) * (0.7 + Math.random() * 1.2);
       drawRose(x, y, size, flowerHue, smoothVolume);
       voiceLog.push({ volume: smoothVolume, hue: flowerHue });
       flowerCount++;
