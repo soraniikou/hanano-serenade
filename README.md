@@ -10,7 +10,7 @@ https://hanano-serenade.vercel.app
 →毎回　異なる短いメッセージがでます
 
 
-| :---: | :---: |
+
 | ![4](yuriotiru.png) | ![1](yuriotiru2.png) |
 | ![3](yuriotiru3.png) | ![2](yuriotiru4.png) |
 
