@@ -11,6 +11,6 @@ https://hanano-serenade.vercel.app
 
 
 
-| ![4](yuriotiru.png) | ![1](yuriotiru2.png) |
-| ![3](yuriotiru3.png) | ![2](yuriotiru4.png) |
+ ![4](yuriotiru.png) ![1](yuriotiru2.png) 
+ ![3](yuriotiru3.png) ![2](yuriotiru4.png) 
 
