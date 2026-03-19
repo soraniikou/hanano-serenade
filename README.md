@@ -9,4 +9,8 @@ https://hanano-serenade.vercel.app
 →🌼12/12 まで言葉を伝え続けると
 →毎回　異なる短いメッセージがでます
 
+| スクリーンショット1 | スクリーンショット2 |
+| :---: | :---: |
+| ![1](yuriotiru.png) | ![2](yuriotiru2.png) |
+| ![3](yuriotiru3.png) | ![4](yuriotiru4.png) |
 
