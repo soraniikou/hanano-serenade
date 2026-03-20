@@ -192,8 +192,8 @@ startBtn.addEventListener('click', async () => {
 function getVolume() {
   analyser.getByteFrequencyData(dataArray);
   let sum = 0;
-  for (let i = 3; i < 36; i++) sum += dataArray[i];
-  return sum / 33 / 255;
+  for (let i = 4; i < 28; i++) sum += dataArray[i];
+  return sum / 24 / 255;
 }
 
 function loop() {
@@ -217,7 +217,7 @@ function loop() {
   ctx.fillRect(0, 0, width, height);
 
   // 閾値を0.15に上げて環境音を無視
-  if (smoothVolume > 0.15 && !bouquetShown) {
+  if (smoothVolume > 0.20 && !bouquetShown) {
     baseHue = (baseHue + smoothVolume * 180) % 360;
     const now = Date.now();
     if (now - lastFlowerTime > 1050) {
