@@ -363,6 +363,103 @@ restartBtn.addEventListener('click', () => {
 });
 
 function map(v, a, b, c, d) { return c + (d-c)*((v-a)/(b-a)); }
+// ==========================================
+// 花びら舞い落ちるアニメーション（調整版）
+// ==========================================
+const petalCanvas = document.getElementById('petalCanvas');
+const pCtx = petalCanvas.getContext('2d');
+let petals = [];
+let petalAnimId = null;
+
+function resizePetalCanvas() {
+  petalCanvas.width = window.innerWidth;
+  petalCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizePetalCanvas);
+resizePetalCanvas();
+
+function createPetal() {
+  const hue = Math.random() < 0.2
+    ? 40 + Math.random() * 20          // 暖かい黄色系
+    : 330 + Math.random() * 30;        // 柔らかなピンク系
+  return {
+    x: Math.random() * petalCanvas.width,
+    y: -20,
+    size: 5 + Math.random() * 10,
+    speedY: 0.5 + Math.random() * 0.8,
+    speedX: (Math.random() - 0.5) * 0.6,
+    rotation: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.03,
+    sway: Math.random() * Math.PI * 2,
+    swaySpeed: 0.005 + Math.random() * 0.01,
+    hue: hue,
+    sat: 70 + Math.random() * 20,
+    bri: 80 + Math.random() * 15,
+    alpha: 0.3 + Math.random() * 0.3, // 透明度を下げて重なりを美しく
+  };
+}
+
+function drawPetal(p) {
+  pCtx.save();
+  pCtx.translate(p.x, p.y);
+  pCtx.rotate(p.rotation);
+  pCtx.beginPath();
+  // 花びらの形：より繊細な涙型
+  pCtx.moveTo(0, -p.size / 2);
+  pCtx.bezierCurveTo(
+     p.size * 0.4, -p.size * 0.3,
+     p.size * 0.5,  p.size * 0.2,
+     0,             p.size * 0.5
+  );
+  pCtx.bezierCurveTo(
+    -p.size * 0.5,  p.size * 0.2,
+    -p.size * 0.4, -p.size * 0.3,
+     0,            -p.size / 2
+  );
+  pCtx.fillStyle = `hsla(${p.hue}, ${p.sat}%, ${p.bri}%, ${p.alpha})`;
+  pCtx.fill();
+  pCtx.restore();
+}
+
+function updatePetals() {
+  pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+
+  // 花びらの最大数を80に増やして密度をアップ
+  if (petals.length < 80 && Math.random() < 0.2) {
+    petals.push(createPetal());
+  }
+
+  petals = petals.filter(p => p.y < petalCanvas.height + 30);
+
+  for (const p of petals) {
+    p.sway += p.swaySpeed;
+    // ゆらゆら揺れる動きを少し大きく
+    p.x += p.speedX + Math.sin(p.sway) * 1.0;
+    p.y += p.speedY;
+    p.rotation += p.rotSpeed;
+    drawPetal(p);
+  }
+
+  petalAnimId = requestAnimationFrame(updatePetals);
+}
+
+function startPetals() {
+  petals = [];
+  petalCanvas.classList.add('show');
+  if (petalAnimId) cancelAnimationFrame(petalAnimId);
+  updatePetals();
+}
+
+function stopPetals() {
+  petalCanvas.classList.remove('show');
+  if (petalAnimId) cancelAnimationFrame(petalAnimId);
+  petalAnimId = null;
+  petals = [];
+  pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+}
+</script>
+</body>
+</html>
 
 
  
