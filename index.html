@@ -283,8 +283,8 @@ function showBouquet() {
 
   const avgVol = voiceLog.reduce((s, l) => s + l.volume, 0) / voiceLog.length;
   let category;
-  if (avgVol < 0.12) category = 'soft';
-  else if (avgVol < 0.22) category = 'medium';
+  if (avgVol < 0.18) category = 'soft';
+  else if (avgVol < 0.28) category = 'medium';
   else category = 'strong';
 
   const pool = poems[category];
